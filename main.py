@@ -12,16 +12,19 @@ def main(page: ft.Page):
     # 데이터베이스 접속
     con = duckdb.connect("data/finance.db")
 
-    # 테이블 생성
+    # 1. 기존에 잘못 생성된 테이블을 삭제하여 초기화합니다.
+    con.execute("DROP TABLE IF EXISTS assets")
+
+    # 2. 테이블을 만들 때 'ticker'를 중복 체크의 기준(PRIMARY KEY)으로 확실히 정해줍니다.
     con.execute("""
-        CREATE TABLE IF NOT EXISTS assets (
+        CREATE TABLE assets (
             ticker VARCHAR PRIMARY KEY,
             name VARCHAR,
             type VARCHAR
         )
     """)
 
-    # assets.csv 파일을 읽어서 테이블에 추가
+    # 3. 이제 'ticker'가 겹치면 무시하라는 명령이 정상적으로 작동합니다.
     con.execute("""
         INSERT OR IGNORE INTO assets 
         SELECT * FROM read_csv_auto('data/assets.csv')
